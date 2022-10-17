@@ -19,7 +19,6 @@ bool enable = false;
 class Curve {
 public:
     GLFWwindow* shapeWindow;
-    double origin_X, origin_Y, center_X, center_Y, edgeLenght;
     vector<double> coordinates_X;
     vector<double> coordinates_Y;
 
@@ -41,10 +40,12 @@ public:
             rangeY = abs(y[i + 2] - y[i + 1]);
 
             if (rangeX > rangeY)
-                step = 1 / rangeX;
+                step = double(1) / rangeX;
 
             else
-                step = 1 / rangeY;
+                step = double(1) / rangeY;
+
+            cout << "step: " << step << endl;
 
             for (double t = 0; t <= 1; t += step)
             {
@@ -58,11 +59,11 @@ public:
                           (-3*pow(t, 3) + 3*pow(t, 2) + 3*t + 1)*y[i+2] +
                           ( 1*pow(t, 3) + 0*pow(t, 2) + 0*t + 0)*y[i+3])/6);
 
-                coordinates_X.push_back(auxX/AXIS_TICK_REFERENCE);
-                coordinates_Y.push_back(auxY/AXIS_TICK_REFERENCE);
+                coordinates_X.push_back(auxX / AXIS_TICK_REFERENCE);
+                coordinates_Y.push_back(auxY / AXIS_TICK_REFERENCE);
             }
 
-            i += 3;
+            i++;
         }
     }
 
@@ -80,14 +81,6 @@ public:
 
         glEnd();
     }
-
-    void setOrigin(double newOrigin_X, double newOrigin_Y)
-    {
-        origin_X = newOrigin_X;
-        origin_Y = newOrigin_Y;
-    }
-
-    virtual void calculateVertices() {};
 };
 
 void drawAxis(GLFWwindow* window)
@@ -129,14 +122,14 @@ void drawAxis(GLFWwindow* window)
     free(h);
 }
 
-int selectShape(GLFWwindow* window, vector<Curve> shapes)
+int selectShape(GLFWwindow* window, vector<Curve> curves)
 {
     int userInput = 0;
 
     cout << "\nPerform operation on selected Curve?" << endl;
     cout << "\n1 - Next Curve \n2 - Confirm\n3 - Cancel" << endl;
 
-    for (int i = 0; i < shapes.size(); i++)
+    for (int i = 0; i < curves.size(); i++)
     {
         userInput = 0;
         glClear(GL_COLOR_BUFFER_BIT);
@@ -145,13 +138,13 @@ int selectShape(GLFWwindow* window, vector<Curve> shapes)
 
         drawAxis(window);
 
-        for (int j = 0; j < shapes.size(); j++)
+        for (int j = 0; j < curves.size(); j++)
         {
             if (j == i)
-                shapes[j].drawCurve(true);
+                curves[j].drawCurve(true);
 
             else
-                shapes[j].drawCurve();
+                curves[j].drawCurve();
         }
 
         glfwSwapBuffers(window);
@@ -180,12 +173,11 @@ int prompt()
     int mainOption = 0;
 
     cout << "\nChoose your option:" << endl;
-    cout << "1 - Draw Figure" << endl;
-    cout << "2 - Transform Figure" << endl;
-    cout << "3 - Delete Figure" << endl;
-    cout << "4 - Quit";
+    cout << "1 - Draw Curve" << endl;
+    cout << "2 - Delete Curve" << endl;
+    cout << "3 - Quit";
 
-    while (mainOption < 1 or mainOption > 4)
+    while (mainOption < 1 or mainOption > 3)
     {
         cout << "\n: ";
         cin >> mainOption;
@@ -202,10 +194,9 @@ int promptInput()
     cout << "\nChoose how to input the points:" << endl;
     cout << "1 - Type points" << endl;
     cout << "2 - Click on Screen" << endl;
-    cout << "3 - Type center and size" << endl;
-    cout << "4 - Cancel";
+    cout << "3 - Cancel";
 
-    while (inputOption < 1 or inputOption > 4)
+    while (inputOption < 1 or inputOption > 3)
     {
         cout << "\n: ";
         cin >> inputOption;
@@ -213,37 +204,18 @@ int promptInput()
 
     return inputOption;
 }
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
-int transformationPrompt()
-{
-    int transformationOption = 0;
 
-    cout << "\nChoose a transformation to perform:" << endl;
-    cout << "1 - Translation" << endl;
-    cout << "2 - Rotation" << endl;
-    cout << "3 - Scaling" << endl;
-    cout << "4 - Mirroring" << endl;
-    cout << "5 - Shearing" << endl;
-    cout << "6 - Cancel";
-
-    while (transformationOption < 1 or transformationOption > 6)
-    {
-        cout << "\n: ";
-        cin >> transformationOption;
-    }
-
-    return transformationOption;
-}
-
-void refreshWindowToClick(GLFWwindow* window, vector<Curve> shapes) {
+void refreshWindowToClick(GLFWwindow* window, vector<Curve> curves) {
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     drawAxis(window);
 
-    for (int j = 0; j < shapes.size(); j++) {
-        shapes[j].drawCurve();
+    for (int j = 0; j < curves.size(); j++) {
+        curves[j].drawCurve();
     }
 
     glfwSwapBuffers(window);
@@ -301,7 +273,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 int main(void) {
     GLFWwindow* window;
-    vector<Curve> shapes;
+    vector<Curve> curves;
     int selectedShapeId = -1, inputOption = 0, mainOption = 0, auxInput = 0, transformationInput = 0, pointsInput = 0, control;
     double auxX, auxY, auxTransform;
     bool isPointRepeated = false;
@@ -319,8 +291,7 @@ int main(void) {
     }
 
     glfwMakeContextCurrent(window);
-
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetMouseButtonCallback(window, NULL);
 
     // Main window loop
     while (!glfwWindowShouldClose(window)) {
@@ -332,8 +303,8 @@ int main(void) {
 
         drawAxis(window);
 
-        for (int i = 0; i < shapes.size(); i++)
-            shapes[i].drawCurve();
+        for (int i = 0; i < curves.size(); i++)
+            curves[i].drawCurve();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -345,8 +316,8 @@ int main(void) {
 
         //If adding Curve option was selected
         if (mainOption == 1) {
-            //verify current number of shapes
-            if (shapes.size() == MAX_FIGURES) {
+            //verify current number of curves
+            if (curves.size() == MAX_FIGURES) {
                 cout << "\nReached max number of figures" << endl;
             }
             else {
@@ -391,38 +362,19 @@ int main(void) {
 
                             if (!isPointRepeated)
                             {
-                                x_shape.push_back(auxX / AXIS_TICK_REFERENCE);
-                                y_shape.push_back(auxY / AXIS_TICK_REFERENCE);
+                                x_shape.push_back(auxX);
+                                y_shape.push_back(auxY);
                             }
                         }
                     }
 
                     if (x_shape.size() < 3)
                         cout << "\nLess than 3 points entered. NO drawing will be generated!" << endl;
-
-                    // Set center and origin of the Curve and create it
+                    
                     else
                     {
-                        // Invalid value to enter on the input point 'while';
-                        auxX = -AXIS_TICK_REFERENCE;
-                        auxY = -AXIS_TICK_REFERENCE;
-
-                        cout << "\nType center point." << endl;
-
-                        while (((auxX > CANVAS_SIZE) or (auxX < -CANVAS_SIZE)) or ((auxY > CANVAS_SIZE) or (auxY < -CANVAS_SIZE))) {
-                            cout << "\nCoordinates must be in the interval of -" << CANVAS_SIZE << " and " << CANVAS_SIZE << "." << endl;
-                            cout << "X : ";
-                            cin >> auxX;
-
-                            cout << "Y : ";
-                            cin >> auxY;
-                        }
-
                         Curve sh = Curve(x_shape, y_shape);
-
-                        sh.setOrigin(x_shape[0], y_shape[0]);
-
-                        shapes.push_back(sh);
+                        curves.push_back(sh);
                     }
 
                     x_shape.clear();
@@ -434,62 +386,35 @@ int main(void) {
                 else if (inputOption == 2) {
                     x_shape.clear();
                     y_shape.clear();
+
+                    glfwPollEvents();
+                    
                     enable = true;
+                    
+                    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
                     cout << "\nLeft-click to add a new point (at least 3 points to generate a figure).\nRight-click to stop input.\n\n(Repeated points will be discarded!)" << endl;
 
                     while (enable) 
                     {
-                        refreshWindowToClick(window, shapes);
+                        refreshWindowToClick(window, curves);
                     }
 
-                    if (x_shape.size() > 2)
+                    if (x_shape.size() >= 3)
                     {
                         Curve sh = Curve(x_shape, y_shape);
-                        shapes.push_back(sh);
+                        curves.push_back(sh);
                         x_shape.clear();
                         y_shape.clear();
                     }
 
                     else
                         cout << "\nLess than 3 points entered. NO drawing will be generated!" << endl;
+
+                    glfwSetMouseButtonCallback(window, NULL);
                 }
 
-                //If option of typing center coordinates and size was selected
-                else if (inputOption == 3) {
-                    int shapeOption = 0;
-                    double centerX, centerY, size;
-
-                    while (shapeOption < 1 or shapeOption > 3)
-                    {
-                        cout << "\nChoose Figure Type:" << endl;
-                        cout << "1 - Square" << endl;
-                        cout << "2 - Triangle" << endl;
-                        cout << "3 - Hexagon" << endl;
-                        cin >> shapeOption;
-                    }
-
-                    cout << "\nType center (X and Y):" << endl;
-                    cin >> centerX >> centerY;
-
-                    cout << "\nType size:" << endl;
-                    cin >> size;
-
-                    //Limit coordinates and size to be inside the screen
-                    while (((centerX > CANVAS_SIZE) or (centerX < -CANVAS_SIZE)) or ((centerY > CANVAS_SIZE) or (centerY < -CANVAS_SIZE)) or (size > CANVAS_SIZE)) {
-                        cout << "\nCoordinates and size must be in the interval of -" << CANVAS_SIZE << " and " << CANVAS_SIZE << ", type X and Y again:" << endl;
-                        cin >> centerX >> centerY;
-
-                        cout << "\nType size:" << endl;
-                        cin >> size;
-                    }
-
-                    centerX = centerX / AXIS_TICK_REFERENCE;
-                    centerY = centerY / AXIS_TICK_REFERENCE;
-                    size = size / AXIS_TICK_REFERENCE;
-                }
-
-                else if(inputOption == 4)
+                else if(inputOption == 3)
                 {
                     continue;
                 }
@@ -499,9 +424,9 @@ int main(void) {
 
 
         // Deletion option selected
-        else if (mainOption == 3)
+        else if (mainOption == 2)
         {
-            selectedShapeId = selectShape(window, shapes);
+            selectedShapeId = selectShape(window, curves);
 
             if (selectedShapeId != -1)
             {
@@ -510,12 +435,12 @@ int main(void) {
                 cin >> auxInput;
 
                 if (auxInput == 1)
-                    shapes.erase(shapes.begin() + selectedShapeId);
+                    curves.erase(curves.begin() + selectedShapeId);
             }
         }
 
         //Quit Software
-        else if (mainOption == 4)
+        else if (mainOption == 3)
         {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }

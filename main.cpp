@@ -29,15 +29,15 @@ public:
         generateBSpline(x, y);
     }
 
-    void generateBSpline(vector<double> x, vector<double> y)
+    void generateBSpline(vector<double> x, vector<double> y) 
     {
         int i = 0;
         double rangeX = 0, rangeY = 0, step = 0, auxX = 0, auxY = 0;
 
-        while ((i + 3) < x.size())
+        while ((i + 2) < x.size()) 
         {
-            rangeX = abs(x[i + 2] - x[i + 1]);
-            rangeY = abs(y[i + 2] - y[i + 1]);
+            rangeX = abs(x[i + 1] - x[i]);
+            rangeY = abs(y[i + 1] - y[i]);
 
             if (rangeX > rangeY)
                 step = double(1) / rangeX;
@@ -45,22 +45,18 @@ public:
             else
                 step = double(1) / rangeY;
 
-            cout << "step: " << step << endl;
-
-            for (double t = 0; t <= 1; t += step)
+            for (double t = 0; t <= 1; t += step) 
             {
-                auxX =  (((-1*pow(t, 3) + 3*pow(t, 2) - 3*t + 1)*x[i] +
-                          ( 3*pow(t, 3) - 6*pow(t, 2) + 0*t + 4)*x[i+1] + 
-                          (-3*pow(t, 3) + 3*pow(t, 2) + 3*t + 1)*x[i+2] +
-                          ( 1*pow(t, 3) + 0*pow(t, 2) + 0*t + 0)*x[i+3])/6);
+                auxX =  ((( 1*pow(t, 2) - 2*t + 1)*x[i] +
+                          (-2*pow(t, 2) + 2*t + 1)*x[i+1] + 
+                          ( 1*pow(t, 2) + 0*t + 0)*x[i+2])/2);
 
-                auxY =  (((-1*pow(t, 3) + 3*pow(t, 2) - 3*t + 1)*y[i] +
-                          ( 3*pow(t, 3) - 6*pow(t, 2) + 0*t + 4)*y[i+1] + 
-                          (-3*pow(t, 3) + 3*pow(t, 2) + 3*t + 1)*y[i+2] +
-                          ( 1*pow(t, 3) + 0*pow(t, 2) + 0*t + 0)*y[i+3])/6);
+                auxY =  ((( 1*pow(t, 2) - 2*t + 1)*y[i] +
+                          (-2*pow(t, 2) + 2*t + 1)*y[i+1] + 
+                          ( 1*pow(t, 2) + 0*t + 0)*y[i+2])/2);
 
-                coordinates_X.push_back(auxX / AXIS_TICK_REFERENCE);
-                coordinates_Y.push_back(auxY / AXIS_TICK_REFERENCE);
+                coordinates_X.push_back((auxX) / AXIS_TICK_REFERENCE);
+                coordinates_Y.push_back((auxY) / AXIS_TICK_REFERENCE);
             }
 
             i++;
@@ -204,8 +200,6 @@ int promptInput()
 
     return inputOption;
 }
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-
 
 void refreshWindowToClick(GLFWwindow* window, vector<Curve> curves) {
     glClear(GL_COLOR_BUFFER_BIT);

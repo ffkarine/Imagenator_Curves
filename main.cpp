@@ -6,11 +6,18 @@
 #include <GLFW/glfw3.h>
 #include <glut.h>
 
+#define RGB_MAX 255.0
+
 #define CANVAS_SIZE 10
 #define AXIS_TICK_REFERENCE (CANVAS_SIZE + 1)
-#define MAX_FIGURES 255
+#define MAX_FIGURES 12
 
 using namespace std;
+
+//COLORS : RED; DARK_ORANGE; ORANGE; DARK_YELLOW; YELLOW; GREEN; DARK_GREEN; TEAL; BLUE; INDIGO, PURPLE; MAGENTA; 
+vector<float> RED = {255, 255, 255, 255, 255, 153, 0, 0, 0, 77, 158, 198};
+vector<float> GREEN = { 0, 63, 127, 193, 255, 254, 127, 132, 0, 0, 0, 0};
+vector<float> BLUE = { 56, 0, 0, 0, 0, 0, 0, 127, 205, 206, 199, 134};
 
 vector<double> x_shape;
 vector<double> y_shape;
@@ -63,17 +70,18 @@ public:
         }
     }
 
-    void drawCurve(bool isColored = false)
+    void drawCurve(bool isSelected = false, int colorId = -1)
     {
         glBegin(GL_LINE_STRIP);
 
-        if (isColored)
-            glColor3f(75.0 / 255, 152.0 / 255, 240.0 / 255);
+        if (isSelected)
+            glColor3f(1, 1, 1);
+            
+        else
+            glColor3f(RED[colorId], GREEN[colorId], BLUE[colorId]);
 
         for (int i = 0; i < coordinates_X.size(); i++)
             glVertex2f(coordinates_X[i], coordinates_Y[i]);
-
-        glColor3f(1, 1, 1);
 
         glEnd();
     }
@@ -91,6 +99,7 @@ void drawAxis(GLFWwindow* window)
         return;
 
     glBegin(GL_LINES);
+    glColor3f(1, 1, 1);
 
     //Eixo X principal
     glVertex2f(-1, 0);
@@ -140,7 +149,7 @@ int selectShape(GLFWwindow* window, vector<Curve> curves)
                 curves[j].drawCurve(true);
 
             else
-                curves[j].drawCurve();
+                curves[j].drawCurve(false, j);
         }
 
         glfwSwapBuffers(window);
@@ -209,7 +218,7 @@ void refreshWindowToClick(GLFWwindow* window, vector<Curve> curves) {
     drawAxis(window);
 
     for (int j = 0; j < curves.size(); j++) {
-        curves[j].drawCurve();
+        curves[j].drawCurve(false, j);
     }
 
     glfwSwapBuffers(window);
@@ -272,6 +281,13 @@ int main(void) {
     double auxX, auxY, auxTransform;
     bool isPointRepeated = false;
 
+    for (int i = 0; i < RED.size(); i++)
+    {
+        RED[i] /= RGB_MAX;
+        GREEN[i] /= RGB_MAX;
+        BLUE[i] /= RGB_MAX;
+    }
+
     // Initializing GLFW
     if (!glfwInit())
         return -1;
@@ -298,7 +314,7 @@ int main(void) {
         drawAxis(window);
 
         for (int i = 0; i < curves.size(); i++)
-            curves[i].drawCurve();
+            curves[i].drawCurve(false, i);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

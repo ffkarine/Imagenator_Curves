@@ -15,9 +15,9 @@
 using namespace std;
 
 //COLORS : RED; DARK_ORANGE; ORANGE; DARK_YELLOW; YELLOW; GREEN; DARK_GREEN; TEAL; BLUE; INDIGO, PURPLE; MAGENTA; 
-vector<float> RED = {255, 255, 255, 255, 255, 153, 0, 0, 0, 77, 158, 198};
-vector<float> GREEN = { 0, 63, 127, 193, 255, 254, 127, 132, 0, 0, 0, 0};
-vector<float> BLUE = { 56, 0, 0, 0, 0, 0, 0, 127, 205, 206, 199, 134};
+vector<float> RED = { 255, 255, 255, 255, 255, 153, 0, 0, 0, 77, 158, 198 };
+vector<float> GREEN = { 0, 63, 127, 193, 255, 254, 127, 132, 0, 0, 0, 0 };
+vector<float> BLUE = { 56, 0, 0, 0, 0, 0, 0, 127, 205, 206, 199, 134 };
 
 vector<double> x_shape;
 vector<double> y_shape;
@@ -36,12 +36,12 @@ public:
         generateBSpline(x, y);
     }
 
-    void generateBSpline(vector<double> x, vector<double> y) 
+    void generateBSpline(vector<double> x, vector<double> y)
     {
         int i = 0;
         double rangeX = 0, rangeY = 0, step = 0, auxX = 0, auxY = 0;
 
-        while ((i + 2) < x.size()) 
+        while ((i + 2) < x.size())
         {
             rangeX = abs(x[i + 1] - x[i]);
             rangeY = abs(y[i + 1] - y[i]);
@@ -52,15 +52,15 @@ public:
             else
                 step = double(1) / rangeY;
 
-            for (double t = 0; t <= 1; t += step) 
+            for (double t = 0; t <= 1; t += step)
             {
-                auxX =  ((( 1*pow(t, 2) - 2*t + 1)*x[i] +
-                          (-2*pow(t, 2) + 2*t + 1)*x[i+1] + 
-                          ( 1*pow(t, 2) + 0*t + 0)*x[i+2])/2);
+                auxX = (((1 * pow(t, 2) - 2 * t + 1) * x[i] +
+                    (-2 * pow(t, 2) + 2 * t + 1) * x[i + 1] +
+                    (1 * pow(t, 2) + 0 * t + 0) * x[i + 2]) / 2);
 
-                auxY =  ((( 1*pow(t, 2) - 2*t + 1)*y[i] +
-                          (-2*pow(t, 2) + 2*t + 1)*y[i+1] + 
-                          ( 1*pow(t, 2) + 0*t + 0)*y[i+2])/2);
+                auxY = (((1 * pow(t, 2) - 2 * t + 1) * y[i] +
+                    (-2 * pow(t, 2) + 2 * t + 1) * y[i + 1] +
+                    (1 * pow(t, 2) + 0 * t + 0) * y[i + 2]) / 2);
 
                 coordinates_X.push_back((auxX) / AXIS_TICK_REFERENCE);
                 coordinates_Y.push_back((auxY) / AXIS_TICK_REFERENCE);
@@ -76,7 +76,7 @@ public:
 
         if (isSelected)
             glColor3f(1, 1, 1);
-            
+
         else
             glColor3f(RED[colorId], GREEN[colorId], BLUE[colorId]);
 
@@ -175,39 +175,39 @@ int selectShape(GLFWwindow* window, vector<Curve> curves)
 //Initial prompt for basic option selection
 int prompt()
 {
-    int mainOption = 0;
+    char mainOption = 0;
 
     cout << "\nChoose your option:" << endl;
     cout << "1 - Draw Curve" << endl;
     cout << "2 - Delete Curve" << endl;
     cout << "3 - Quit";
 
-    while (mainOption < 1 or mainOption > 3)
+    while (mainOption < '1' or mainOption > '3')
     {
         cout << "\n: ";
         cin >> mainOption;
     }
 
-    return mainOption;
+    return mainOption - '0';
 }
 
 //Prompt for type of input for new Curve
 int promptInput()
 {
-    int inputOption = 0;
+    char inputOption = 0;
 
     cout << "\nChoose how to input the points:" << endl;
     cout << "1 - Type points" << endl;
     cout << "2 - Click on Screen" << endl;
     cout << "3 - Cancel";
 
-    while (inputOption < 1 or inputOption > 3)
+    while (inputOption < '1' or inputOption > '3')
     {
         cout << "\n: ";
         cin >> inputOption;
     }
 
-    return inputOption;
+    return inputOption - '0';
 }
 
 void refreshWindowToClick(GLFWwindow* window, vector<Curve> curves) {
@@ -236,8 +236,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             glfwGetCursorPos(window, &xpos, &ypos);
 
             // Normalizing input
-            xpos = ( (xpos - 400) * AXIS_TICK_REFERENCE / 400);
-            ypos = ( (400 - ypos) * AXIS_TICK_REFERENCE / 400);
+            xpos = ((xpos - 400) * AXIS_TICK_REFERENCE / 400);
+            ypos = ((400 - ypos) * AXIS_TICK_REFERENCE / 400);
 
             // Limiting x input from -10 to 10
             if (xpos > 10)
@@ -380,7 +380,7 @@ int main(void) {
 
                     if (x_shape.size() < 3)
                         cout << "\nLess than 3 points entered. NO drawing will be generated!" << endl;
-                    
+
                     else
                     {
                         Curve sh = Curve(x_shape, y_shape);
@@ -398,14 +398,14 @@ int main(void) {
                     y_shape.clear();
 
                     glfwPollEvents();
-                    
+
                     enable = true;
-                    
+
                     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
                     cout << "\nLeft-click to add a new point (at least 3 points to generate a figure).\nRight-click to stop input.\n\n(Repeated points will be discarded!)" << endl;
 
-                    while (enable) 
+                    while (enable)
                     {
                         refreshWindowToClick(window, curves);
                     }
@@ -424,7 +424,7 @@ int main(void) {
                     glfwSetMouseButtonCallback(window, NULL);
                 }
 
-                else if(inputOption == 3)
+                else if (inputOption == 3)
                 {
                     continue;
                 }
